@@ -24,6 +24,19 @@ public class Layer {
         return nodes;
     }
 
+    public int hasBias(){
+        if(bias == null){
+            return 0;
+        }
+        return 1;
+    }
+
+    public Boolean hasPrev(){
+        if(prevLayer!=null)
+            return true;
+        return false;
+    }
+
     public void addNode(Node node,double weights[]){
         nodes.add(node);
 
@@ -35,10 +48,18 @@ public class Layer {
                 List<Node> prev = prevLayer.getNodes();
                 int i;
                 for(i=0; i<prev.size(); i++){
-                    node.addInput(new Connection(prev.get(i),weights[i]));
+                    node.addInput(new Connection(prev.get(i),weights[i]));    //i+1th layer will have array of inputs, the connection themselves can call getSource to find sources
                 }
 
             }
+        }
+    }
+
+    public void calcOutputError(double[] target){
+        int i;
+        for(i=0; i<nodes.size(); i++){
+            Node curr = nodes.get(i);
+            curr.setError(curr.getOutput() - target[i]);
         }
     }
 
