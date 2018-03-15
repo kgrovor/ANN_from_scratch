@@ -19,9 +19,9 @@ public class Backprop {
         /*System.out.println(network.getLayers().get(0).getNodes().size());*/
         network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
 
-        network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
+        //network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
 
-        network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
+        //network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
         //System.out.println(network.getLayers().get(0).getNodes().size());
 
 
@@ -34,7 +34,8 @@ public class Backprop {
         //System.out.println("Reaaaadaaaay?");
         Random gen = new Random(55);
         for(i=0; i< dim; i++){
-            arr[i] = Math.random()*Math.pow(-1,gen.nextInt(56));
+            //arr[i] = Math.random()*Math.pow(-1,gen.nextInt(56));
+            arr[i] = 0.2;
 
         }
 
@@ -46,7 +47,7 @@ public class Backprop {
     public static void main(String arg[]) {
         Backprop handle = new Backprop();
         handle.SGD(10000);
-        double[] inp = {1,0};
+        double[] inp = {0,1};
 
         System.out.println(handle.giveManualInput(inp));
 
@@ -57,6 +58,7 @@ public class Backprop {
         for(k=1; k<network.getLayers().size(); k++){
             network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
         }
+        //System.out.println(network.getLayers().get(2).getNodes().get(0).getInputs().get(0).getWeight());
         return network.getLayers().get(2).getNodes().get(0).getOutput();
 
 
@@ -82,13 +84,14 @@ public class Backprop {
                 prevOutputError = outputError;
                 outputError = backPropogate(target);
             }
-            /*if(outputError - prevOutputError < Math.pow(10,-8)){
+            if(Math.abs(outputError - prevOutputError) < Math.pow(10,-6)){
                 System.out.println("Error threshold");
+                System.out.println(outputError + " " + prevOutputError);
                 break;
-            }*/
+            }
             if(true){
                 //System.out.println(outputError);
-                System.out.println("At iteration "+ i + "the error is " + (outputError - prevOutputError));
+                System.out.println("At iteration "+ i + "the error is " + (outputError));
             }
 
         }
@@ -100,7 +103,8 @@ public class Backprop {
         double totError = 0;
         List<Node> outputNodes = outputLayer.getNodes();
         for(i=0; i<outputLayer.getNodes().size(); i++){
-            double indError = outputNodes.get(i).getOutput()*(1- outputNodes.get(i).getOutput())*(outputNodes.get(i).getOutput() - targetV[i]);
+            //double indError = outputNodes.get(i).getOutput()*(1- outputNodes.get(i).getOutput())*(outputNodes.get(i).getOutput() - targetV[i]);
+            double indError = (outputNodes.get(i).getOutput() - targetV[i]);
             //System.out.println(indError);
             outputNodes.get(i).setError(indError);  // Output layer errors
             totError += indError;
@@ -141,7 +145,7 @@ public class Backprop {
 
                 updateWeights(currLayer);
         }
-        return totError;
+        return totError;  //Error at output layer
     }
 
     public void updateWeights(Layer currentLayer){
@@ -151,7 +155,7 @@ public class Backprop {
             List<Connection> conn = currNodes.get(i).getInputs();
             for(j=0; j< conn.size(); j++){
                 double dW = alpha*currNodes.get(i).getError()*conn.get(j).getSrc().getOutput();
-                conn.get(j).setWeight(conn.get(j).getWeight() + dW);                                                    // WHY PLUS
+                conn.get(j).setWeight(conn.get(j).getWeight() - dW);                                                    // WHY PLUS
             }
         }
     }

@@ -11,7 +11,8 @@ public class NN {
             //System.out.println("Hidden Layer added " + (i-1));
             layers.add(new Layer(layers.get(i-1), new Node("sigmoid")));
         }
-        layers.add(new Layer(layers.get(i-1),new Node("linear")));
+        //layers.add(new Layer(layers.get(i-1),new Node("linear")));
+        layers.add(new Layer(layers.get(i-1)));
         //System.out.println(i);
     }
 
