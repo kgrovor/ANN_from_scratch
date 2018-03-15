@@ -8,7 +8,28 @@ public class Backprop {
     NN network;
 
     public Backprop(){
-        network = new NN(1,"sigmoid","linear");
+        network = new NN(1,"sigmoid","linear");   //Adding nodes
+        double[] unused = {1.2,1.1};
+        network.getLayers().get(0).addNode(new Node("linear"),unused);
+        network.getLayers().get(0).addNode(new Node("linear"),unused);
+        //System.out.println("Layers 0 mdsm " + network.getLayers().get(0).hasBias());
+        //System.out.println(network.getLayers().get(0).getNodes().size());
+        network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
+        /*System.out.println(network.getLayers().get(0).getNodes().size());*/
+        network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
+        //System.out.println(network.getLayers().get(0).getNodes().size());
+
+
+        network.getLayers().get(2).addNode(new Node("linear"),generateRandom(network.getLayers().get(1).getNodes().size()));
+    }
+
+    double[] generateRandom(int dim){
+        double[] arr = new double[dim];
+        int i;
+        for(i=0; i< dim; i++){
+            arr[i] = Math.random()*Math.pow(-1,(int)10*Math.random());
+        }
+        return arr;
     }
 
 

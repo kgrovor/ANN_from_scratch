@@ -16,6 +16,7 @@ public class Layer {
     }
     public Layer(Layer prevLayer, Node bias){
         this(prevLayer);
+        //System.out.println(prevLayer.hasBias());
         this.bias = bias;
         nodes.add(bias);
     }
@@ -40,9 +41,9 @@ public class Layer {
     public void addNode(Node node,double weights[]){
         nodes.add(node);
 
-        if(prevLayer!=null){
-            if(prevLayer.getNodes().size() != weights.length){
-                throw new IllegalArgumentException("Weight size mismatch");
+        if(this.prevLayer!=null){
+            if(this.prevLayer.getNodes().size()!= weights.length){
+                throw new IllegalArgumentException("Weight size mismatch ");
             }
             else{
                 List<Node> prev = prevLayer.getNodes();

@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 
 public class Node {
@@ -9,6 +10,7 @@ public class Node {
 
     public Node(String activation){
         this.actfunc = activation;
+        input = new ArrayList<Connection>();
     }
     public void addInput(Connection c){
         input.add(c);

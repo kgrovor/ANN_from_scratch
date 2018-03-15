@@ -7,10 +7,12 @@ public class NN {
         layers = new ArrayList<Layer>();
         layers.add(new Layer()); // Layer 0 - input layer
         int i;
-        for(i=1; i<numHidden; i++){
-            layers.add(new Layer(layers.get(i-1),new Node("sigmoid")));
+        for(i=1; i<numHidden +1; i++){
+            //System.out.println("Hidden Layer added " + (i-1));
+            layers.add(new Layer(layers.get(i-1), new Node("sigmoid")));
         }
         layers.add(new Layer(layers.get(i-1),new Node("linear")));
+        //System.out.println(i);
     }
 
     public List<Layer> getLayers() {
