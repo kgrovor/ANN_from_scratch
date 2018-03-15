@@ -3,9 +3,9 @@ import java.util.Random;
 
 public class Backprop {
 
-    double[][] input = {{1, 1}, {1, 0}, {0, 1}, {0, 0}};
-    int[] target = {0, 1, 1, 0};
-    double alpha = 0.01;
+    double[][] input = {{1, 1},{0 ,0},{0, 1},{1,0}};
+    int[] target = {1,0,0,0};
+    double alpha = 0.0001;
     NN network;
 
     public Backprop(){
@@ -19,9 +19,9 @@ public class Backprop {
         /*System.out.println(network.getLayers().get(0).getNodes().size());*/
         network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
 
-        //network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
+        //network.getLayers().get(2).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(1).getNodes().size()));
 
-        //network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
+        //network.getLayers().get(2).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(1).getNodes().size()));
         //System.out.println(network.getLayers().get(0).getNodes().size());
 
 
@@ -34,8 +34,9 @@ public class Backprop {
         //System.out.println("Reaaaadaaaay?");
         Random gen = new Random(55);
         for(i=0; i< dim; i++){
-            //arr[i] = Math.random()*Math.pow(-1,gen.nextInt(56));
-            arr[i] = 0.2;
+            arr[i] = (Math.random() * 1) - 0.5;
+            System.out.println(arr[i]);
+            //arr[i] = 0.2;
 
         }
 
@@ -47,7 +48,7 @@ public class Backprop {
     public static void main(String arg[]) {
         Backprop handle = new Backprop();
         handle.SGD(10000);
-        double[] inp = {0,1};
+        double[] inp = {0,0};
 
         System.out.println(handle.giveManualInput(inp));
 
@@ -63,6 +64,7 @@ public class Backprop {
 
 
     }
+
 
     public void SGD(int epochs){
         int i,j,k,l;
@@ -89,9 +91,10 @@ public class Backprop {
                 System.out.println(outputError + " " + prevOutputError);
                 break;
             }
-            if(true){
+            if(i%30 == 0){
                 //System.out.println(outputError);
                 System.out.println("At iteration "+ i + "the error is " + (outputError));
+                System.out.println(network.getLayers().get(1).getNodes().get(1).getError());
             }
 
         }
@@ -139,7 +142,7 @@ public class Backprop {
                     }
                 }
 
-                sum = sum + sum*currNode.getOutput()*(1-currNode.getOutput());   // HARDCODED SIGMOID FOR HIDDEN
+                sum = sum*currNode.getOutput()*(1-currNode.getOutput());   // HARDCODED SIGMOID FOR HIDDEN
                 currNode.setError(sum);
             }
 
@@ -156,6 +159,7 @@ public class Backprop {
             for(j=0; j< conn.size(); j++){
                 double dW = alpha*currNodes.get(i).getError()*conn.get(j).getSrc().getOutput();
                 conn.get(j).setWeight(conn.get(j).getWeight() - dW);                                                    // WHY PLUS
+                //System.out.println("Weight " + j + i + "is " + conn.get(j).getWeight() + "it used to be " + (conn.get(j).getWeight() + dW));
             }
         }
     }
