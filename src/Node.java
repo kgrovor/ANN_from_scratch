@@ -4,7 +4,7 @@ import java.util.List;
 public class Node {
     private String actfunc;
     private List<Connection> input;
-    private double inputSum;
+    private double inputSum = 0;
     private double output;
     private double error;
 
@@ -21,10 +21,14 @@ public class Node {
     public double generateOutput(){
         int i;
         double outp = 0;
-        for(i=0; i<input.size(); i++){
-            outp += input.get(i).getSrc().output*input.get(i).getWeight();
+        for(i=0; i<this.input.size(); i++){
+            /*if(Double.isNaN(input.get(i).getSrc().getOutput()) || Double.isNaN(input.get(i).getWeight())){
+                System.out.println("ERROR LIES IN " + i + "input is " + input.get(i).getSrc().getOutput() + "weight is " + input.get(i).getWeight());
+            }*/
+            outp += input.get(i).getSrc().getOutput() *input.get(i).getWeight();
         }
         this.inputSum = outp;
+
         this.output = MyUtil.activation(outp,actfunc);
         return this.output;
     }

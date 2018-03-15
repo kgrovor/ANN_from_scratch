@@ -39,6 +39,7 @@ public class NN {
             List<Node> dstNodes = dst.getNodes();
             for(i=0; i< dstNodes.size(); i++){
                 dstNodes.get(i).generateOutput();
+
             }
         }
         else{

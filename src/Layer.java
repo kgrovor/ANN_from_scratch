@@ -38,7 +38,7 @@ public class Layer {
         return false;
     }
 
-    public void addNode(Node node,double weights[]){
+    public void addNode(Node node,double[] weights){
         nodes.add(node);
 
         if(this.prevLayer!=null){
@@ -47,7 +47,9 @@ public class Layer {
             }
             else{
                 List<Node> prev = prevLayer.getNodes();
+
                 int i;
+
                 for(i=0; i<prev.size(); i++){
                     node.addInput(new Connection(prev.get(i),weights[i]));    //i+1th layer will have array of inputs, the connection themselves can call getSource to find sources
                 }

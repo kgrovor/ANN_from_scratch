@@ -1,9 +1,10 @@
 import java.util.List;
+import java.util.Random;
 
 public class Backprop {
 
-    int[][] input = {{1, 1}, {1, 0}, {0, 1}, {0, 0}};
-    int[] target = {1, 0, 0, 0};
+    double[][] input = {{1, 1}, {1, 0}, {0, 1}, {0, 0}};
+    int[] target = {0, 1, 1, 0};
     double alpha = 0.01;
     NN network;
 
@@ -17,6 +18,10 @@ public class Backprop {
         network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
         /*System.out.println(network.getLayers().get(0).getNodes().size());*/
         network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
+
+        network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
+
+        network.getLayers().get(1).addNode(new Node("sigmoid"),generateRandom(network.getLayers().get(0).getNodes().size()));
         //System.out.println(network.getLayers().get(0).getNodes().size());
 
 
@@ -26,9 +31,13 @@ public class Backprop {
     double[] generateRandom(int dim){
         double[] arr = new double[dim];
         int i;
+        //System.out.println("Reaaaadaaaay?");
+        Random gen = new Random(55);
         for(i=0; i< dim; i++){
-            arr[i] = Math.random()*Math.pow(-1,(int)10*Math.random());
+            arr[i] = Math.random()*Math.pow(-1,gen.nextInt(56));
+
         }
+
         return arr;
     }
 
@@ -36,7 +45,20 @@ public class Backprop {
 
     public static void main(String arg[]) {
         Backprop handle = new Backprop();
-        handle.SGD(1000);
+        handle.SGD(10000);
+        double[] inp = {1,0};
+
+        System.out.println(handle.giveManualInput(inp));
+
+    }
+    public double giveManualInput(double[] inp){
+        network.setInputs(inp);
+        int k;
+        for(k=1; k<network.getLayers().size(); k++){
+            network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
+        }
+        return network.getLayers().get(2).getNodes().get(0).getOutput();
+
 
     }
 
@@ -48,20 +70,24 @@ public class Backprop {
 
             for(j=0; j< input.length; j++){
                 List<Node> inputNodes = network.getLayers().get(0).getNodes();
-                for(l=0; l< input[j].length; l++){
+                /*for(l=0; l< input[j].length; l++){
                     inputNodes.get(l).setOutput(input[j][l]);               //Set output of 1st layer as input values
-                }
+                    //System.out.println(" input " + inputNodes.get(l).getOutput());
+                }*/
+                network.setInputs(input[j]);
+
                 for(k=1; k<network.getLayers().size(); k++){
                     network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
                 }
                 prevOutputError = outputError;
                 outputError = backPropogate(target);
             }
-            if(outputError - prevOutputError < Math.pow(10,-3)){
+            /*if(outputError - prevOutputError < Math.pow(10,-8)){
                 System.out.println("Error threshold");
                 break;
-            }
-            if(i%100==0){
+            }*/
+            if(true){
+                //System.out.println(outputError);
                 System.out.println("At iteration "+ i + "the error is " + (outputError - prevOutputError));
             }
 
@@ -75,9 +101,11 @@ public class Backprop {
         List<Node> outputNodes = outputLayer.getNodes();
         for(i=0; i<outputLayer.getNodes().size(); i++){
             double indError = outputNodes.get(i).getOutput()*(1- outputNodes.get(i).getOutput())*(outputNodes.get(i).getOutput() - targetV[i]);
+            //System.out.println(indError);
             outputNodes.get(i).setError(indError);  // Output layer errors
             totError += indError;
         }
+        //System.out.println(totError + "ddnndnnd");
         // Update last set of weights
         /*for(i=0; i<outputNodes.size(); i++){
             List<Connection> conn = outputNodes.get(i).getInputs();  //conn - List of inputs
@@ -123,7 +151,7 @@ public class Backprop {
             List<Connection> conn = currNodes.get(i).getInputs();
             for(j=0; j< conn.size(); j++){
                 double dW = alpha*currNodes.get(i).getError()*conn.get(j).getSrc().getOutput();
-                conn.get(j).setWeight(conn.get(j).getWeight() - dW);
+                conn.get(j).setWeight(conn.get(j).getWeight() + dW);                                                    // WHY PLUS
             }
         }
     }

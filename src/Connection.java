@@ -6,6 +6,10 @@ public class Connection {
         this.source = src;
         this.weight = weight;
 
+        if(Double.isNaN(weight)){
+            throw new IllegalArgumentException("Weight is Nan");
+        }
+
     }
 
     public double getWeight(){
