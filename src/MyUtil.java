@@ -1,3 +1,7 @@
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 public class MyUtil {
     public static double activation(double input,String func){
         if(func.equals("sigmoid")){
@@ -21,6 +25,10 @@ public class MyUtil {
         }
 
         return trasposedMatrix;
+    }
+    public static String readTextFile(String fileName) throws IOException {
+        String content = new String(Files.readAllBytes(Paths.get(fileName).toAbsolutePath()));
+        return content;
     }
 }
 

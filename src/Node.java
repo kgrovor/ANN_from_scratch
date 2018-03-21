@@ -7,6 +7,7 @@ public class Node {
     private double inputSum = 0;
     private double output;
     private double error;
+    private double outputSum;
 
     public Node(String activation){
         this.actfunc = activation;
@@ -18,7 +19,7 @@ public class Node {
     public List<Connection> getInputs(){
         return input;
     }
-    public double generateOutput(){
+    public double generateOutput(){ // rule = 0 update, 1 = overwrite
         int i;
         double outp = 0;
         for(i=0; i<this.input.size(); i++){
@@ -27,10 +28,24 @@ public class Node {
             }*/
             outp += input.get(i).getSrc().getOutput() *input.get(i).getWeight();
         }
-        this.inputSum = outp;
+            this.inputSum = outp;
 
-        this.output = MyUtil.activation(outp,actfunc);
+            this.output = MyUtil.activation(outp, actfunc);
+            outputSum += this.output;
+
         return this.output;
+    }
+    public double getOutputSum(){
+        return outputSum;
+    }
+    public void updateOutputSum(double sum){
+        outputSum += sum;
+    }
+    public void resetOutputSum(){
+        this.outputSum = 0;
+    }
+    public void clearOutputSum(){
+        outputSum = 0;
     }
     public double getOutput(){
         return output;
