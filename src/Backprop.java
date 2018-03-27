@@ -193,7 +193,7 @@ public class Backprop {
     }
 
 
-    public void updateWeights(Layer currentLayer) {
+/*    public void updateWeights(Layer currentLayer) {
         List<Node> currNodes = currentLayer.getNodes();
         int i, j, k;
         for (i = 0; i < currNodes.size(); i++) {
@@ -208,9 +208,9 @@ public class Backprop {
             }
             //System.out.println(currNodes.get(i).getError());
         }
-    }
+    }*/
 
-    public void backpropog(double[] errorOut) {
+    /*public void backpropog(double[] errorOut) {
         int i, j, k;
         double grad = 0;
         Layer outputLayer = network.getLayers().get(network.getLayers().size() - 1);
@@ -243,7 +243,7 @@ public class Backprop {
         double errorGrad[] = new double[network.getLayers().get(network.getLayers().size() - 1).getNodes().size()];
         for (i = 0; i <= epochs; i++) {
             for (j = 0; j < input.length; j++) {
-/*                if(j%100 == 0){
+*//*                if(j%100 == 0){
 
                     backpropog(errorGrad);
                      total =0;
@@ -254,7 +254,7 @@ public class Backprop {
                      }
 
 
-                }*/
+                }*//*
                 network.setInputs(input[j]);
                 for (k = 1; k < network.getLayers().size(); k++) {
                     network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
@@ -277,7 +277,7 @@ public class Backprop {
                 System.out.println("Validation error is " + avgErrorValidation());
             }
         }
-
+*/
     public void train(int epochs) {
 
         double error;
@@ -291,7 +291,7 @@ public class Backprop {
                 prevError = currError;
                 currError = avgErrorValidation();
                 System.out.println(" ---------------- \nValidation error is " + currError + "\n--------------");
-                if(currError > prevError + Math.pow(10,-3)){
+                if(currError > prevError ){ //+ Math.pow(10,-3)
                     System.out.println("Validation error is increasing. Ending epochs!");
                     break;
                 }
@@ -303,7 +303,7 @@ public class Backprop {
 
         double error = 0;
 
-        Map<Connection, Double> synapseNeuronDeltaMap = new HashMap<Connection, Double>();
+        Map<Connection, Double> connectionToDelta = new HashMap<Connection, Double>();
 
         for (int i = 0; i < input.length; i++) {
 
@@ -313,7 +313,6 @@ public class Backprop {
             List<Layer> layers = network.getLayers();
 
             network.setInputs(currInput);
-            //double[] output = neuralNetwork.getOutput();
 
             for (int k = 1; k < network.getLayers().size(); k++) {
                 network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
@@ -331,64 +330,59 @@ public class Backprop {
                 Layer layer = layers.get(j);
 
                 for (int k = 0; k < layer.getNodes().size(); k++) {
-                    Node neuron = layer.getNodes().get(k);
-                    double neuronError = 0;
+                    Node currNode = layer.getNodes().get(k);
+                    double nodeError = 0;
 
-                    if (j == layers.size()-1) { // IF output layer
-                        //the order of output and expected determines the sign of the delta. if we have output - expected, we subtract the delta
-                        //if we have expected - output we add the delta.
-                        neuronError = listOfOutputs[k]*(1- listOfOutputs[k]) * (listOfOutputs[k] - expectedOutput[k]);
-                    } else {
-                        neuronError = neuron.getOutput()*(1 - neuron.getOutput());
+                    if (j == layers.size()-1) {         // IF output layer
+                        nodeError = listOfOutputs[k]*(1- listOfOutputs[k]) * (listOfOutputs[k] - expectedOutput[k]);
+                    }
+                    else {
+                        nodeError = currNode.getOutput()*(1 - currNode.getOutput());
 
                         double sum = 0;
-                        List<Node> downstreamNeurons = layer.getNextLayer().getNodes();
-                        for (Node downstreamNeuron : downstreamNeurons) {
-
+                        List<Node> listOfNodes = layer.getNextLayer().getNodes();
+                        for (Node cNode : listOfNodes) {
                             int l = 0;
-                            boolean found = false;
-                            while (l < downstreamNeuron.getInputs().size() && !found) {
-                                Connection synapse = downstreamNeuron.getInputs().get(l);
+                            while (l < cNode.getInputs().size()) {
+                                Connection synapse = cNode.getInputs().get(l);
 
-                                if (synapse.getSrc() == neuron) {
-                                    sum += (synapse.getWeight() * downstreamNeuron.getError());
-                                    found = true;
+                                if (synapse.getSrc() == currNode) {
+                                    sum += (synapse.getWeight() * cNode.getError());
+                                    break;
                                 }
 
                                 l++;
                             }
                         }
 
-                        neuronError *= sum;
+                        nodeError = nodeError*sum;
                     }
 
-                    neuron.setError(neuronError);
+                    currNode.setError(nodeError);
                 }
             }
 
             //Second step of the backpropagation algorithm. Using the errors calculated above, update the weights of the
             //network
 
-            double newLearningRate = alpha/(1 + currentEpoch/5);
-            //double newLearningRate = alpha;
+            //double newLearningRate = alpha/(1 + currentEpoch/5);                                   // LOK TODO
+            double newLearningRate = alpha;
 
             //System.out.println("Alpha" + newLearningRate);
             for(int j = layers.size() - 1; j > 0; j--) {
                 Layer layer = layers.get(j);
 
-                for(Node neuron : layer.getNodes()) {
+                for(Node cNode : layer.getNodes()) {
+                    for(Connection connect : cNode.getInputs()) {
+                        double delta = newLearningRate * cNode.getError() * connect.getSrc().getOutput();
 
-                    for(Connection synapse : neuron.getInputs()) {
-
-                        double delta = newLearningRate * neuron.getError() * synapse.getSrc().getOutput();
-
-                        if(synapseNeuronDeltaMap.get(synapse) != null) {
-                            double previousDelta = synapseNeuronDeltaMap.get(synapse);
+                        if(connectionToDelta.get(connect) != null) {
+                            double previousDelta = connectionToDelta.get(connect);
                             delta += momentum * previousDelta;
                         }
 
-                        synapseNeuronDeltaMap.put(synapse, delta);
-                        synapse.setWeight(synapse.getWeight() - delta);
+                        connectionToDelta.put(connect, delta);
+                        connect.setWeight(connect.getWeight() - delta);
                     }
                 }
             }
