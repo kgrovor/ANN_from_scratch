@@ -5,7 +5,7 @@ public class Node {
     private String actfunc;
     private List<Connection> input;
     private double inputSum = 0;
-    private double output;
+    private double output = 0;
     private double error;
     private double outputSum;
 

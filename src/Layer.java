@@ -18,6 +18,7 @@ public class Layer {
         this(prevLayer);
         //System.out.println(prevLayer.hasBias());
         this.bias = bias;
+        this.bias.setOutput(1);
         nodes.add(bias);
     }
 
@@ -58,12 +59,21 @@ public class Layer {
         }
     }
 
+
     public void calcOutputError(double[] target){
         int i;
         for(i=0; i<nodes.size(); i++){
             Node curr = nodes.get(i);
             curr.setError(curr.getOutput() - target[i]);
         }
+    }
+
+    public Layer getNextLayer() {
+        return nextLayer;
+    }
+
+    void setNextLayer(Layer nextLayer) {
+        this.nextLayer = nextLayer;
     }
 
 }

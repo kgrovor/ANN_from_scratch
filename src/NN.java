@@ -14,6 +14,9 @@ public class NN {
         //layers.add(new Layer(layers.get(i-1),new Node("linear")));
         layers.add(new Layer(layers.get(i-1)));
         //System.out.println(i);
+        for(int j =0; j< layers.size() -1; j++){
+            layers.get(j).setNextLayer(layers.get(j+1));
+        }
     }
 
     public List<Layer> getLayers() {
