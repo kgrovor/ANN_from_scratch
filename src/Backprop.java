@@ -303,7 +303,7 @@ public class Backprop {
 
         double error = 0;
 
-        Map<Connection, Double> connectionToDelta = new HashMap<Connection, Double>();
+        Map<Connection, Double> connectionToDelta = new HashMap<Connection, Double>(); // Used to get previous delta value (For momentum calculation)
 
         for (int i = 0; i < input.length; i++) {
 
@@ -312,7 +312,7 @@ public class Backprop {
 
             List<Layer> layers = network.getLayers();
 
-            network.setInputs(currInput);
+            network.setInputs(currInput);   // Set outputs of input layer
 
             for (int k = 1; k < network.getLayers().size(); k++) {
                 network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
@@ -325,11 +325,10 @@ public class Backprop {
             }
 
             //First step of the backpropagation algorithm. Backpropagate errors from the output layer all the way up
-            //to the first hidden layer
             for (int j = layers.size() - 1; j > 0; j--) {
                 Layer layer = layers.get(j);
 
-                for (int k = 0; k < layer.getNodes().size(); k++) {
+                for (int k = 0; k < layer.getNodes().size(); k++) {  //For all nodes in the current layer
                     Node currNode = layer.getNodes().get(k);
                     double nodeError = 0;
 
@@ -340,13 +339,13 @@ public class Backprop {
                         nodeError = currNode.getOutput()*(1 - currNode.getOutput());
 
                         double sum = 0;
-                        List<Node> listOfNodes = layer.getNextLayer().getNodes();
-                        for (Node cNode : listOfNodes) {
+                        List<Node> listOfNodes = layer.getNextLayer().getNodes(); //n+1th layer's nodes
+                        for (Node cNode : listOfNodes) {                               // Since list of connections (inputs) is available in the n+1th later for the connections b/w nth and n+1th layer
                             int l = 0;
                             while (l < cNode.getInputs().size()) {
                                 Connection synapse = cNode.getInputs().get(l);
 
-                                if (synapse.getSrc() == currNode) {
+                                if (synapse.getSrc() == currNode) {                    // Update nth node wrt all the n+1th nodes
                                     sum += (synapse.getWeight() * cNode.getError());
                                     break;
                                 }
@@ -362,19 +361,18 @@ public class Backprop {
                 }
             }
 
-            //Second step of the backpropagation algorithm. Using the errors calculated above, update the weights of the
-            //network
+            //Second step of the backpropagation algorithm. Using the errors calculated above, update the weights of the network
 
-            //double newLearningRate = alpha/(1 + currentEpoch/5);                                   // LOK TODO
-            double newLearningRate = alpha;
+            double newLearningRate = alpha/(1 + currentEpoch/5);                                   
+            //double newLearningRate = alpha;
 
             //System.out.println("Alpha" + newLearningRate);
             for(int j = layers.size() - 1; j > 0; j--) {
                 Layer layer = layers.get(j);
 
                 for(Node cNode : layer.getNodes()) {
-                    for(Connection connect : cNode.getInputs()) {
-                        double delta = newLearningRate * cNode.getError() * connect.getSrc().getOutput();
+                    for(Connection connect : cNode.getInputs()) {          // Connection is a object with the weight of an individual connection b/w two nodes
+                        double delta = newLearningRate * cNode.getError() * connect.getSrc().getOutput();   // Value of dW
 
                         if(connectionToDelta.get(connect) != null) {
                             double previousDelta = connectionToDelta.get(connect);
