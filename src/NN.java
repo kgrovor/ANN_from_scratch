@@ -3,6 +3,7 @@ import java.util.List;
 
 public class NN {
     private List<Layer> layers;
+    boolean batchcomplete = true;
     public NN(int numHidden,String actHidden, String actOutput){
         layers = new ArrayList<Layer>();
         layers.add(new Layer()); // Layer 0 - input layer

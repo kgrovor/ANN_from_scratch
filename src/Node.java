@@ -36,7 +36,7 @@ public class Node {
         return this.output;
     }
     public double getOutputSum(){
-        return outputSum;
+        return outputSum/100;
     }
     public void updateOutputSum(double sum){
         outputSum += sum;

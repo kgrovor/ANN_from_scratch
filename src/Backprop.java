@@ -41,6 +41,7 @@ public class Backprop {
 
         return arr;
     }
+    boolean batchcomplete;
 
 
     public static void main(String arg[]) throws IOException {
@@ -179,105 +180,6 @@ public class Backprop {
 
     }
 
-
-    public double giveManualInput(double[] inp) {
-        network.setInputs(inp);
-        int k;
-        for (k = 1; k < network.getLayers().size(); k++) {
-            network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
-        }
-        //System.out.println(network.getLayers().get(2).getNodes().get(0).getInputs().get(0).getWeight());
-        return network.getLayers().get(2).getNodes().get(0).getOutput();
-
-
-    }
-
-
-/*    public void updateWeights(Layer currentLayer) {
-        List<Node> currNodes = currentLayer.getNodes();
-        int i, j, k;
-        for (i = 0; i < currNodes.size(); i++) {
-            List<Connection> conn = currNodes.get(i).getInputs();
-            for (j = 0; j < conn.size(); j++) {
-                double dW = alpha * currNodes.get(i).getError() * conn.get(j).getSrc().getOutput();
-                conn.get(j).setWeight(conn.get(j).getWeight() - dW);
-                //System.out.println("Weight " + j + i + "is " + conn.get(j).getWeight() + "it used to be " + (conn.get(j).getWeight() + dW));
-                //System.out.println(dW + " " + currNodes.get(i).getError() + " " + conn.get(j).getSrc().getOutput());
-
-
-            }
-            //System.out.println(currNodes.get(i).getError());
-        }
-    }*/
-
-    /*public void backpropog(double[] errorOut) {
-        int i, j, k;
-        double grad = 0;
-        Layer outputLayer = network.getLayers().get(network.getLayers().size() - 1);
-        Layer hiddenLayer = network.getLayers().get(network.getLayers().size() - 2);
-
-
-        for (i = 0; i < hiddenLayer.getNodes().size(); i++) {
-            for (j = 0; j < outputLayer.getNodes().size(); j++) {
-                List<Connection> conn = outputLayer.getNodes().get(j).getInputs();
-                for (k = 0; k < conn.size(); k++) {
-                    if (conn.get(k).getSrc() == hiddenLayer.getNodes().get(i)) {
-                        grad = grad + conn.get(k).getWeight() * errorOut[j];
-                        break;
-                    }
-                }
-            }
-            Node currNode = hiddenLayer.getNodes().get(i);
-            currNode.setError(grad * (currNode.getOutputSum() / 100) * (1 - (currNode.getOutputSum() / 100)));
-            currNode.resetOutputSum();   //RESETTING OUTPUTSUM
-            grad = 0;
-        }
-        updateWeights(outputLayer);
-        updateWeights(hiddenLayer);
-
-    }
-
-    public void MBGD(int epochs, int decayfactor) {  // Find target sum
-        int i, j, k;
-        double total = 0;
-        double errorGrad[] = new double[network.getLayers().get(network.getLayers().size() - 1).getNodes().size()];
-        for (i = 0; i <= epochs; i++) {
-            for (j = 0; j < input.length; j++) {
-*//*                if(j%100 == 0){
-
-                    backpropog(errorGrad);
-                     total =0;
-
-                     for(k=0; k<errorGrad.length; k++){   //Reset
-                         total += errorGrad[k];
-                         errorGrad[k] = 0;
-                     }
-
-
-                }*//*
-                network.setInputs(input[j]);
-                for (k = 1; k < network.getLayers().size(); k++) {
-                    network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
-                }
-                for (k = 0; k < target[k].length; k++) {
-                    double currOutput = network.getLayers().get(network.getLayers().size() - 1).getNodes().get(k).getOutput();
-                    errorGrad[k] += (currOutput - target[j][k]) * currOutput * (1 - currOutput);
-
-                }
-                backpropog(errorGrad);
-                total = 0;
-
-                for (k = 0; k < errorGrad.length; k++) {   //Reset
-                    total += errorGrad[k];
-                    errorGrad[k] = 0;
-
-                }
-            }
-                System.out.println("Error at epoch " + i + " on training is " + total);
-                System.out.println("Validation error is " + avgErrorValidation());
-            }
-        }
-*/
     public void train(int epochs) {
 
         double error;
@@ -306,6 +208,12 @@ public class Backprop {
         Map<Connection, Double> connectionToDelta = new HashMap<Connection, Double>(); // Used to get previous delta value (For momentum calculation)
 
         for (int i = 0; i < input.length; i++) {
+            if(i%100==0){
+                batchcomplete = true;
+            }
+            else{
+                batchcomplete = false;
+            }
 
             double[] currInput = input[i];
             int[] expectedOutput = target[i];
@@ -323,79 +231,80 @@ public class Backprop {
                 listOfOutputs[k] = currOutput;
 
             }
+            if(network.batchcomplete == true) {
 
-            //First step of the backpropagation algorithm. Backpropagate errors from the output layer all the way up
-            for (int j = layers.size() - 1; j > 0; j--) {
-                Layer layer = layers.get(j);
+                //First step of the backpropagation algorithm. Backpropagate errors from the output layer all the way up
+                for (int j = layers.size() - 1; j > 0; j--) {
+                    Layer layer = layers.get(j);
 
-                for (int k = 0; k < layer.getNodes().size(); k++) {  //For all nodes in the current layer
-                    Node currNode = layer.getNodes().get(k);
-                    double nodeError = 0;
+                    for (int k = 0; k < layer.getNodes().size(); k++) {  //For all nodes in the current layer
+                        Node currNode = layer.getNodes().get(k);
+                        double nodeError = 0;
 
-                    if (j == layers.size()-1) {         // IF output layer
-                        nodeError = listOfOutputs[k]*(1- listOfOutputs[k]) * (listOfOutputs[k] - expectedOutput[k]);
-                    }
-                    else {
-                        nodeError = currNode.getOutput()*(1 - currNode.getOutput());
+                        if (j == layers.size() - 1) {         // IF output layer
+                            nodeError = listOfOutputs[k] * (1 - listOfOutputs[k]) * (listOfOutputs[k] - expectedOutput[k]);
+                        } else {
+                            nodeError = currNode.getOutput() * (1 - currNode.getOutput());
 
-                        double sum = 0;
-                        List<Node> listOfNodes = layer.getNextLayer().getNodes(); //n+1th layer's nodes
-                        for (Node cNode : listOfNodes) {                               // Since list of connections (inputs) is available in the n+1th later for the connections b/w nth and n+1th layer
-                            int l = 0;
-                            while (l < cNode.getInputs().size()) {
-                                Connection synapse = cNode.getInputs().get(l);
+                            double sum = 0;
+                            List<Node> listOfNodes = layer.getNextLayer().getNodes(); //n+1th layer's nodes
+                            for (Node cNode : listOfNodes) {                               // Since list of connections (inputs) is available in the n+1th later for the connections b/w nth and n+1th layer
+                                int l = 0;
+                                while (l < cNode.getInputs().size()) {
+                                    Connection synapse = cNode.getInputs().get(l);
 
-                                if (synapse.getSrc() == currNode) {                    // Update nth node wrt all the n+1th nodes
-                                    sum += (synapse.getWeight() * cNode.getError());
-                                    break;
+                                    if (synapse.getSrc() == currNode) {                    // Update nth node wrt all the n+1th nodes
+                                        sum += (synapse.getWeight() * cNode.getError());
+                                        break;
+                                    }
+
+                                    l++;
                                 }
-
-                                l++;
                             }
+
+                            nodeError = nodeError * sum;
                         }
 
-                        nodeError = nodeError*sum;
+                        currNode.setError(nodeError);
                     }
-
-                    currNode.setError(nodeError);
                 }
-            }
 
-            //Second step of the backpropagation algorithm. Using the errors calculated above, update the weights of the network
+                //Second step of the backpropagation algorithm. Using the errors calculated above, update the weights of the network
 
-            double newLearningRate = alpha/(1 + currentEpoch/5);                                   
-            //double newLearningRate = alpha;
+                double newLearningRate = alpha / (1 + currentEpoch / 5);
+                //double newLearningRate = alpha;
 
-            //System.out.println("Alpha" + newLearningRate);
-            for(int j = layers.size() - 1; j > 0; j--) {
-                Layer layer = layers.get(j);
+                //System.out.println("Alpha" + newLearningRate);
+                for (int j = layers.size() - 1; j > 0; j--) {
+                    Layer layer = layers.get(j);
 
-                for(Node cNode : layer.getNodes()) {
-                    for(Connection connect : cNode.getInputs()) {          // Connection is a object with the weight of an individual connection b/w two nodes
-                        double delta = newLearningRate * cNode.getError() * connect.getSrc().getOutput();   // Value of dW
+                    for (Node cNode : layer.getNodes()) {
+                        for (Connection connect : cNode.getInputs()) {          // Connection is a object with the weight of an individual connection b/w two nodes
+                            double delta = newLearningRate * cNode.getError() * connect.getSrc().getOutput();   // Value of dW
 
-                        if(connectionToDelta.get(connect) != null) {
-                            double previousDelta = connectionToDelta.get(connect);
-                            delta += momentum * previousDelta;
+                            if (connectionToDelta.get(connect) != null) {
+                                double previousDelta = connectionToDelta.get(connect);
+                                delta += momentum * previousDelta;
+                            }
+
+                            connectionToDelta.put(connect, delta);
+                            connect.setWeight(connect.getWeight() - delta);
                         }
-
-                        connectionToDelta.put(connect, delta);
-                        connect.setWeight(connect.getWeight() - delta);
                     }
                 }
+
+                for (int k = 1; k < network.getLayers().size(); k++) {
+                    network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
+                }
+
+                for (int k = 0; k < target[k].length; k++) {
+                    double currOutput = network.getLayers().get(network.getLayers().size() - 1).getNodes().get(k).getOutput();
+                    listOfOutputs[k] = currOutput;
+
+                }
+
+                error += findError(listOfOutputs, expectedOutput);
             }
-
-            for (int k = 1; k < network.getLayers().size(); k++) {
-                network.fwdPropogateTo(network.getLayers().get(k));   // Propogate forward
-            }
-
-            for (int k = 0; k < target[k].length; k++) {
-                double currOutput = network.getLayers().get(network.getLayers().size() - 1).getNodes().get(k).getOutput();
-                listOfOutputs[k] = currOutput;
-
-            }
-
-            error += findError(listOfOutputs, expectedOutput);
         }
 
         return error;
@@ -412,7 +321,7 @@ public class Backprop {
             sum += Math.pow(expected[i] - actual[i], 2);
         }
 
-        return sum / 2;
+        return sum / 2000;
     }
 
     }
